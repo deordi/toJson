@@ -1,6 +1,6 @@
 #
 # 10 April 2017
-# this is the stubby.conf that is included with the getdns package
+# this is a yaml version of the stubby.conf that is included with the getdns package
 #
 resolution_type: GETDNS_RESOLUTION_STUB
 dns_transport_list:

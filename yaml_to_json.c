@@ -18,8 +18,6 @@ static int process_yaml_mapping(yaml_parser_t*, yaml_event_t*, FILE*);
 
 static int output_scalar(yaml_event_t*, FILE*);
 
-static int output_key(yaml_event_t*, FILE*);
-
 static void report_parser_error(yaml_parser_t*);
 
 static char* event_type_string(yaml_event_type_t);
@@ -371,7 +369,7 @@ process_yaml_mapping(yaml_parser_t* parser, yaml_event_t* event, FILE* outstream
         if (event->type == YAML_SCALAR_EVENT) {
 
             if (members) fprintf(outstream, ", ");
-            if (!output_key(event, outstream)) {
+            if (!output_scalar(event, outstream)) {
                 fprintf(stderr, "Error outputting key\n");
                 return 0;
             }
@@ -459,27 +457,13 @@ output_scalar(yaml_event_t* event, FILE* outstream) {
     assert(outstream);
     assert(event->data.scalar.length > 0);
 
-    fprintf(outstream, "\"");
+    if (event->data.scalar.style != YAML_PLAIN_SCALAR_STYLE) fprintf(outstream, "\"");
     
     for (int k = 0; k < event->data.scalar.length; k++) {
         fprintf(outstream, "%c", event->data.scalar.value[k]);
     }
 
-    fprintf(outstream, "\"");
-
-    return 1;
-}
-
-int
-output_key(yaml_event_t* event, FILE* outstream) {
-
-    assert(event);
-    assert(outstream);
-    assert(event->data.scalar.length > 0);
-
-    for (int k = 0; k < event->data.scalar.length; k++) {
-        fprintf(outstream, "%c", event->data.scalar.value[k]);
-    }
+    if (event->data.scalar.style != YAML_PLAIN_SCALAR_STYLE) fprintf(outstream, "\"");
 
     return 1;
 }
