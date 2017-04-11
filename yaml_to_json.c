@@ -112,7 +112,6 @@ process_yaml(FILE* instream, FILE* outstream) {
     }
 
     if (!process_yaml_stream(&parser, &event, outstream)) {
-        fprintf(stderr, "Stream error: error processing stream\n");
         goto return_error;
     }
     
@@ -162,7 +161,6 @@ process_yaml_stream(yaml_parser_t* parser, yaml_event_t* event, FILE* outstream)
             case YAML_DOCUMENT_START_EVENT:
 
                 if (!process_yaml_document(parser, event, outstream)) {
-                    fprintf(stderr, "Stream error: error processing stream\n");
                     return 0;   
                 }
                 break;
@@ -222,7 +220,6 @@ process_yaml_document(yaml_parser_t* parser, yaml_event_t* event, FILE* outstrea
             case YAML_SEQUENCE_START_EVENT:
 
                 if (!process_yaml_sequence(parser, event, outstream)) {
-                    fprintf(stderr, "Stream error: error processing stream\n");
                     return 0;   
                 }
                 break;
@@ -230,7 +227,6 @@ process_yaml_document(yaml_parser_t* parser, yaml_event_t* event, FILE* outstrea
             case YAML_MAPPING_START_EVENT:
 
                 if (!process_yaml_mapping(parser, event, outstream)) {
-                    fprintf(stderr, "Stream error: error processing stream\n");
                     return 0;   
                 }
                 break;
@@ -291,7 +287,6 @@ process_yaml_sequence(yaml_parser_t* parser, yaml_event_t* event, FILE* outstrea
 
                 if (elements) fprintf(outstream, ", ");
                 if (!process_yaml_value(parser, event, outstream)) {
-                    fprintf(stderr, "Stream error: error processing stream\n");
                     return 0;   
                 }
                 elements = 1;
@@ -354,7 +349,7 @@ process_yaml_mapping(yaml_parser_t* parser, yaml_event_t* event, FILE* outstream
 
             if (members) fprintf(outstream, ", ");
             if (!output_scalar(event, outstream)) {
-                fprintf(stderr, "Error outputting key\n");
+                fprintf(stderr, "Mapping error: Error outputting key\n");
                 return 0;
             }
 
@@ -392,7 +387,6 @@ process_yaml_mapping(yaml_parser_t* parser, yaml_event_t* event, FILE* outstream
             case YAML_MAPPING_START_EVENT:
 
                 if (!process_yaml_value(parser, event, outstream)) {
-                    fprintf(stderr, "Mapping error: error processing value\n");
                     return 0;   
                 }
                 break;
@@ -432,7 +426,7 @@ process_yaml_value(yaml_parser_t* parser, yaml_event_t* event, FILE* outstream){
         case YAML_SCALAR_EVENT:
 
             if (!output_scalar(event, outstream)) {
-                fprintf(stderr, "Error outputting scalar\n");
+                fprintf(stderr, "Value error: Error outputting scalar\n");
                 return 0;
             }
             break;
@@ -440,7 +434,6 @@ process_yaml_value(yaml_parser_t* parser, yaml_event_t* event, FILE* outstream){
         case YAML_SEQUENCE_START_EVENT:
 
             if (!process_yaml_sequence(parser, event, outstream)) {
-                fprintf(stderr, "Stream error: error processing stream\n");
                 return 0;   
             }
             break;
@@ -448,7 +441,6 @@ process_yaml_value(yaml_parser_t* parser, yaml_event_t* event, FILE* outstream){
         case YAML_MAPPING_START_EVENT:
 
             if (!process_yaml_mapping(parser, event, outstream)) {
-                fprintf(stderr, "Stream error: error processing stream\n");
                 return 0;   
             }
             break;
