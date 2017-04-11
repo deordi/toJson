@@ -16,6 +16,8 @@ static int process_yaml_sequence(yaml_parser_t*, yaml_event_t*, FILE*);
 
 static int process_yaml_mapping(yaml_parser_t*, yaml_event_t*, FILE*);
 
+static int process_yaml_value(yaml_parser_t*, yaml_event_t*, FILE*);
+
 static int output_scalar(yaml_event_t*, FILE*);
 
 static void report_parser_error(yaml_parser_t*);
@@ -284,19 +286,11 @@ process_yaml_sequence(yaml_parser_t* parser, yaml_event_t* event, FILE* outstrea
         switch (event->type)
         {
             case YAML_SCALAR_EVENT:
-
-                if (elements) fprintf(outstream, ", ");
-                if (!output_scalar(event, outstream)) {
-                    fprintf(stderr, "Error outputting scalar\n");
-                    return 0;
-                }
-                elements = 1;
-                break;
-
             case YAML_SEQUENCE_START_EVENT:
+            case YAML_MAPPING_START_EVENT:
 
                 if (elements) fprintf(outstream, ", ");
-                if (!process_yaml_sequence(parser, event, outstream)) {
+                if (!process_yaml_value(parser, event, outstream)) {
                     fprintf(stderr, "Stream error: error processing stream\n");
                     return 0;   
                 }
@@ -309,16 +303,6 @@ process_yaml_sequence(yaml_parser_t* parser, yaml_event_t* event, FILE* outstrea
                 done = 1;
                 break;
 
-            case YAML_MAPPING_START_EVENT:
-
-                if (elements) fprintf(outstream, ", ");
-                if (!process_yaml_mapping(parser, event, outstream)) {
-                    fprintf(stderr, "Stream error: error processing stream\n");
-                    return 0;   
-                }
-                elements = 1;
-                break;
-                
             case YAML_STREAM_START_EVENT:
             case YAML_STREAM_END_EVENT:
             case YAML_DOCUMENT_START_EVENT:
@@ -404,25 +388,11 @@ process_yaml_mapping(yaml_parser_t* parser, yaml_event_t* event, FILE* outstream
         switch (event->type)
         {
             case YAML_SCALAR_EVENT:
-
-                if (!output_scalar(event, outstream)) {
-                    fprintf(stderr, "Error outputting scalar\n");
-                    return 0;
-                }
-                break;
-
             case YAML_SEQUENCE_START_EVENT:
-
-                if (!process_yaml_sequence(parser, event, outstream)) {
-                    fprintf(stderr, "Stream error: error processing stream\n");
-                    return 0;   
-                }
-                break;
-
             case YAML_MAPPING_START_EVENT:
 
-                if (!process_yaml_mapping(parser, event, outstream)) {
-                    fprintf(stderr, "Stream error: error processing stream\n");
+                if (!process_yaml_value(parser, event, outstream)) {
+                    fprintf(stderr, "Mapping error: error processing value\n");
                     return 0;   
                 }
                 break;
@@ -448,6 +418,48 @@ process_yaml_mapping(yaml_parser_t* parser, yaml_event_t* event, FILE* outstream
     
     return 1;
     
+}
+
+int
+process_yaml_value(yaml_parser_t* parser, yaml_event_t* event, FILE* outstream){
+    
+    assert(parser);
+    assert(event);
+    assert(outstream);
+    
+    switch (event->type)
+    {
+        case YAML_SCALAR_EVENT:
+
+            if (!output_scalar(event, outstream)) {
+                fprintf(stderr, "Error outputting scalar\n");
+                return 0;
+            }
+            break;
+
+        case YAML_SEQUENCE_START_EVENT:
+
+            if (!process_yaml_sequence(parser, event, outstream)) {
+                fprintf(stderr, "Stream error: error processing stream\n");
+                return 0;   
+            }
+            break;
+
+        case YAML_MAPPING_START_EVENT:
+
+            if (!process_yaml_mapping(parser, event, outstream)) {
+                fprintf(stderr, "Stream error: error processing stream\n");
+                return 0;   
+            }
+            break;
+            
+        default:
+            fprintf(stderr, "Bug: calling process_yaml_value() in the wrong context");
+            return 0;
+    }
+    
+    return 1;
+   
 }
 
 int
