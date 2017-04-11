@@ -24,6 +24,7 @@ static void report_parser_error(yaml_parser_t*);
 
 static char* event_type_string(yaml_event_type_t);
 
+/* TODO - improve this */
 char*
 event_type_string(yaml_event_type_t type) {
     
@@ -217,6 +218,7 @@ process_yaml_document(yaml_parser_t* parser, yaml_event_t* event, FILE* outstrea
                 done = 1;
                 break;
 
+                /* TODO: revisit if json doesn't like sequqnce-only objects */
             case YAML_SEQUENCE_START_EVENT:
 
                 if (!process_yaml_sequence(parser, event, outstream)) {
